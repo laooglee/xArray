@@ -25,6 +25,8 @@ Attribute VB_Name = "xlmod_ArrayProcessing_v_1_7"
 'udf_Filter2dArrayBy1Column
 'udf_Sort_1d_Array_as_text
 'udf_Rebase_Array
+'udf_CreateIndexColumn
+
 
 ' ----Array Content Processing----
 'udf_Trim_All_Items
@@ -52,6 +54,8 @@ Attribute VB_Name = "xlmod_ArrayProcessing_v_1_7"
 'extended: udf_FillArrayWith - added replacement option
 '1.8 - 28.08.2018
 'changed: udf_AppendTwoArrays: added 1d version
+'1.9 - 21.10.2018
+'added: udf_CreateIndexColumn
 
 Public Enum BorderEnd
     ToBegining
@@ -60,6 +64,10 @@ End Enum
 Public Enum Direction
     Rows
     Columns
+End Enum
+Public Enum en_Position
+    First
+    Last
 End Enum
 
 '-----------------------------------
@@ -595,7 +603,28 @@ Function udf_ColsRangesTo2dArray(farg_SourceRange, farg_RowsBase, farg_ColsBase,
     
 udf_ColsRangesTo2dArray = bufferArr
 End Function
+Function udf_CreateIndexColumn(farg_InputArray, farg_Position As en_Position, farg_IndDelim, ParamArray farg_ColumnsToIndex())
 
+ReDim arr_ProcessingArray(LBound(farg_InputArray, 1) To UBound(farg_InputArray, 1), LBound(farg_InputArray, 2) To UBound(farg_InputArray, 2) + 1)
+
+If farg_Position = First Then ind_col = 1: ind_shift = 1
+If farg_Position = Last Then ind_col = UBound(farg_InputArray, 2) + 1: ind_shift = 0
+
+For i_row = LBound(farg_InputArray, 1) To UBound(farg_InputArray, 1)
+    str_index = ""
+    For j = LBound(farg_ColumnsToIndex, 1) To UBound(farg_ColumnsToIndex, 1)
+        str_index = str_index & farg_IndDelim & farg_InputArray(i_row, farg_ColumnsToIndex(j))
+    Next
+    
+    arr_ProcessingArray(i_row, ind_col) = Right(str_index, Len(str_index) - 1)
+    
+    For k = LBound(farg_InputArray, 2) To UBound(farg_InputArray, 2)
+        arr_ProcessingArray(i_row, k + ind_shift) = farg_InputArray(i_row, k)
+    Next
+Next
+
+udf_CreateIndexColumn = arr_ProcessingArray
+End Function
 Sub uds_Array_to_Range(sarg_SourceArray, sarg_TargetCell, Optional sarg_Transpose As Boolean = False)
     
     ind_ArrayDimentions = udf_GetDimension(sarg_SourceArray)
