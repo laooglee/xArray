@@ -1,4 +1,4 @@
-Attribute VB_Name = "xlmod_ArrayProcessing_v_1_7"
+Attribute VB_Name = "xlmod_ArrayProcessing_v_1_9"
 '---Moved from TRepFuncPack
 'Conventions:
 'udf* - UserDefinedFunction
@@ -26,6 +26,7 @@ Attribute VB_Name = "xlmod_ArrayProcessing_v_1_7"
 'udf_Sort_1d_Array_as_text
 'udf_Rebase_Array
 'udf_CreateIndexColumn
+'udf_CountCasesInArr
 
 
 ' ----Array Content Processing----
@@ -56,6 +57,7 @@ Attribute VB_Name = "xlmod_ArrayProcessing_v_1_7"
 'changed: udf_AppendTwoArrays: added 1d version
 '1.9 - 21.10.2018
 'added: udf_CreateIndexColumn
+'added: udf_CountCasesInArr
 
 Public Enum BorderEnd
     ToBegining
@@ -385,7 +387,6 @@ Else
 End If
 
 End Function
-
 Function udf_SumCountIf_Array(farg_SourceArray, farg_CondCol, Optional farg_DataCol _
                         , Optional farg_DoSum As Boolean = True, Optional farg_ResCol = 0, Optional farg_ResArrayBase = 1 _
                         , Optional farg_CountCases As Boolean = False, Optional fagr_CountOutputCol = 0)
@@ -602,6 +603,32 @@ Function udf_ColsRangesTo2dArray(farg_SourceRange, farg_RowsBase, farg_ColsBase,
     Next
     
 udf_ColsRangesTo2dArray = bufferArr
+End Function
+Function udf_CountCasesInArr(farg_TargetArray, farg_StringToFind, Optional farg_FieldIndex = 1, Optional farg_LookInDim = 1)
+
+    ind_TargArrDim = udf_GetDimension(farg_TargetArray)
+    lng_ResultCount = 0
+    
+    If ind_TargArrDim = 1 Then
+        
+        For i = LBound(farg_TargetArray) To UBound(farg_TargetArray)
+            If "" & farg_TargetArray(i) = "" & farg_StringToFind Then ind_MatchResult = i: lng_ResultCount = lng_ResultCount = 1
+        Next
+        
+    ElseIf ind_TargArrDim = 2 Then
+        
+        If farg_LookInDim = 1 Then
+            For i = LBound(farg_TargetArray, 1) To UBound(farg_TargetArray, 1)
+                If "" & farg_TargetArray(i, farg_FieldIndex) = "" & farg_StringToFind Then ind_MatchResult = Array(i): lng_ResultCount = lng_ResultCount + 1
+            Next
+        ElseIf farg_LookInDim = 2 Then
+            For i = LBound(farg_TargetArray, 2) To UBound(farg_TargetArray, 2)
+                If "" & farg_TargetArray(farg_FieldIndex, i) = "" & farg_StringToFind Then ind_MatchResult = Array(i): lng_ResultCount = lng_ResultCount + 1
+            Next
+        End If
+    End If
+   
+udf_CountCasesInArr = lng_ResultCount
 End Function
 Function udf_CreateIndexColumn(farg_InputArray, farg_Position As en_Position, farg_IndDelim, ParamArray farg_ColumnsToIndex())
 
