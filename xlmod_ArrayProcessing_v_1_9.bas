@@ -58,6 +58,8 @@ Attribute VB_Name = "xlmod_ArrayProcessing_v_1_9"
 '1.9 - 21.10.2018
 'added: udf_CreateIndexColumn
 'added: udf_CountCasesInArr
+'1.9 - 22.10.2018
+'fixed: enum en_Position renamed to pos_... ; fixed handling delimeter in udf_CountCasesInArr
 
 Public Enum BorderEnd
     ToBegining
@@ -68,8 +70,8 @@ Public Enum Direction
     Columns
 End Enum
 Public Enum en_Position
-    First
-    Last
+    pos_First
+    pos_Last
 End Enum
 
 '-----------------------------------
@@ -634,8 +636,8 @@ Function udf_CreateIndexColumn(farg_InputArray, farg_Position As en_Position, fa
 
 ReDim arr_ProcessingArray(LBound(farg_InputArray, 1) To UBound(farg_InputArray, 1), LBound(farg_InputArray, 2) To UBound(farg_InputArray, 2) + 1)
 
-If farg_Position = First Then ind_col = 1: ind_shift = 1
-If farg_Position = Last Then ind_col = UBound(farg_InputArray, 2) + 1: ind_shift = 0
+If farg_Position = pos_First Then ind_col = 1: ind_shift = 1
+If farg_Position = pos_Last Then ind_col = UBound(farg_InputArray, 2) + 1: ind_shift = 0
 
 For i_row = LBound(farg_InputArray, 1) To UBound(farg_InputArray, 1)
     str_index = ""
@@ -643,7 +645,8 @@ For i_row = LBound(farg_InputArray, 1) To UBound(farg_InputArray, 1)
         str_index = str_index & farg_IndDelim & farg_InputArray(i_row, farg_ColumnsToIndex(j))
     Next
     
-    arr_ProcessingArray(i_row, ind_col) = Right(str_index, Len(str_index) - 1)
+    If Len(farg_IndDelim) > 0 Then str_index = Right(str_index, Len(str_index) - 1)
+    arr_ProcessingArray(i_row, ind_col) = str_index
     
     For k = LBound(farg_InputArray, 2) To UBound(farg_InputArray, 2)
         arr_ProcessingArray(i_row, k + ind_shift) = farg_InputArray(i_row, k)
